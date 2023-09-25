@@ -7,50 +7,28 @@ sharing: true
 footer: true
 ---
 
-##### Who are you, and what do you do?
+## About Me
 
-My name is Didik Setiawan. I am a software engineer who likes to contribute to
-free and open-source software. I also work as a devops engineer on an IT
-company in my country.
+Hello, I'm Didik Setiawan, and welcome to my DevOps blog. Here, I'm excited to share my journey, insights, and knowledge as a seasoned DevOps engineer with a strong passion for free and open-source software (FOSS) and collaboration. This blog is not only a platform for sharing what I've learned but also a digital journal where I document my experiences and observations in the dynamic realm of DevOps, automation, infrastructure as code, and the vibrant FOSS community.
 
-##### What hardware do you use?
+### Who Am I?
 
-My laptop is Lenovo Thinkpad. I also got loaned a MacBook from my employer. I
-maintain some server on cloud service, so I can get rid of hardware maintenance
-of production server related to my work. For mobile device, I have a Xiaomi
-Redmi 3 to help me do my daily tasks.
+I'm a dedicated DevOps enthusiast with years of experience in software development and IT operations. My career has provided me with the privilege of collaborating with diverse teams and organizations, helping them bridge the gap between development and operations to deliver high-quality software with greater speed and efficiency. My profound enthusiasm for FOSS and collaboration has significantly influenced my career choices and driven me to contribute actively to these communities.
 
-##### And what software?
+### Why DevOps and FOSS?
 
-Both of my laptop use Linux. Most of server I maintain also use Linux. I use
-Ubuntu Long Term Support both Desktop and Server edition. My consideration for
-using this distro is because reliability, simplicity and comes with good
-community support.
+My fascination with DevOps stems from its transformative potential in today's fast-paced software development landscape. DevOps transcends mere tools and practices; it embodies a cultural shift that empowers teams to work harmoniously, automate repetitive tasks, and continually enhance their processes. My commitment to FOSS is rooted in the belief that software should be open, transparent, and accessible to all. I see FOSS as a catalyst for innovation, user empowerment, and global collaboration.
 
-##### What would be your dream setup?
+### What You'll Find Here
 
-On the hardware side, I have a dream to switch my laptop by upgrade my Lenovo
-Thinkpad. I thought that T series will be a good one. I also heard that Purism
-has Librem laptop which is perfect for freedom and privacy concerned users.  On
-the mobile device, I would like to have whatever brand which supports LineageOS.
-But, due to popularity and approachability, I thought a Xiaomi brand is a good
-one.  
-For home use, it is nice to have a Raspberry Pi running as a multimedia device.
-I also would like to try open source software for networking device, such as
-OpenWRT.
+This blog offers a rich tapestry of tutorials, best practices, real-world stories, and insights spanning the realms of DevOps, FOSS, and collaboration. Explore the DevOps culture, delve into automation, and immerse yourself in the principles of continuous improvement. Simultaneously, journey into the world of open-source software and experience the power of community-driven development. Join me in uncovering the transformative potential of DevOps and FOSS.
 
-##### Why you create this blog?
+### Sharing Knowledge and Personal Experiences
 
-I love to make documentation about journey of my life as a free and open source
-software user also as developer. By create this blog, I could share my views,
-ideas and experiences to other who interested. Finally, I hope that it will be
-useful for others. I licensed the contents of my blog under a 
-<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
-Creative Commons Attribution-ShareAlike 4.0 International License</a>.
-For legacy posts, you can visit: [https://archive.didiksetiawan.com](https://archive.didiksetiawan.com).
-<br />
-<br />
-<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
-<img alt="Creative Commons License" style="border-width:0"
-src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" />
-</a>
+One of the primary goals of this blog is to share my knowledge with you. I firmly believe that knowledge becomes more valuable when shared, and I'm committed to providing you with practical insights and guidance to excel in your DevOps journey while embracing the FOSS ethos. Furthermore, I'll use this platform to chronicle my personal experiences and observations, creating a digital record of my career in DevOps and FOSS.
+
+### Connect With Me
+
+I cherish the vibrant DevOps and FOSS community and look forward to connecting with fellow enthusiasts, engineers, and anyone interested in enhancing software delivery processes and championing open-source values. Feel free to reach out to me via email at [didik dot swn at gmail.com](mailto:didik.swn+removethis@gmail.com) or connect with me on Twitter [@didik_swn](https://twitter.com/didik_swn). I'm always open to networking and engaging in discussions.
+
+Thank you for visiting my DevOps blog. I hope you find the content both informative and inspiring. Together, we will navigate the exciting worlds of DevOps, FOSS, and collaboration, striving to build better, more efficient software systems while upholding the values of openness and community-driven innovation. Let's embark on this enriching journey together!
