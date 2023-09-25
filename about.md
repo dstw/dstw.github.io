@@ -7,8 +7,6 @@ sharing: true
 footer: true
 ---
 
-## About Me
-
 Hello, I'm Didik Setiawan, and welcome to my DevOps blog. Here, I'm excited to share my journey, insights, and knowledge as a seasoned DevOps engineer with a strong passion for free and open-source software (FOSS) and collaboration. This blog is not only a platform for sharing what I've learned but also a digital journal where I document my experiences and observations in the dynamic realm of DevOps, automation, infrastructure as code, and the vibrant FOSS community.
 
 ### Who Am I?
