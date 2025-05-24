@@ -53,7 +53,7 @@ These terms are often used interchangeably, but they serve distinct purposes. To
 
 Understanding these differences is crucial, especially when building scalable, reliable software systems. While DevOps sets the culture and practices, SRE ensures systems are reliable, and Platform Engineers build the internal tooling to make these practices easy to adopt.
 
-![DevOps SRE Platform Engineering difference](../images/devops_sre_platform.png)
+![DevOps SRE Platform Engineering difference](images/devops_sre_platform.png)
 
 An enterprise SaaS company initially relied on a DevOps engineer to manage CI/CD pipelines and infrastructure provisioning. As the product scaled and the complexity of operations increased, reliability issues became frequent. To address this, they brought in SREs to own service-level objectives and define error budgets. Meanwhile, Platform Engineers developed reusable components, templates, and automation to standardize developer environments. Together, the three disciplines worked in synergy — shipping became predictable, developer velocity improved, and incident rates dropped dramatically.
 
