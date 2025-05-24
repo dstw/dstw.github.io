@@ -5,7 +5,7 @@ date: 2025-05-24 09:31:39 +0700
 comments: true
 ---
 
-![Header](assets/images/header_clean_iac.png)
+![Header](/assets/images/header_clean_iac.png)
 
 Infrastructure as Code (IaC) allows engineering teams to manage cloud resources declaratively using configuration files. But writing Terraform that is not only functional but clean, DRY, and easy to maintain is the difference between a stable system and a future debugging nightmare.
 
@@ -41,7 +41,7 @@ This approach is scalable, consistent, and easier to maintain — especially as 
 
 ### Step 1: Define Local Configuration
 
-```hcl
+```
 locals {
   security_groups = {
     web = {
@@ -69,7 +69,7 @@ Adding a new security group? Just add another entry to the map — no need to to
 
 ### Step 2: Create Security Groups with `for_each`
 
-```hcl
+```
 resource "aws_security_group" "sg" {
   for_each = local.security_groups
 
@@ -85,7 +85,7 @@ It also means you get predictable naming and configuration across your environme
 
 ### Step 3: Define Ingress Rules Dynamically
 
-```hcl
+```
 resource "aws_security_group_rule" "ingress" {
   for_each = {
     for sg_key, sg_value in local.security_groups :
@@ -148,3 +148,5 @@ By using `locals` and `for_each`, you unlock a simple yet powerful pattern in Te
 This approach results in cleaner, more maintainable, and error-resistant code — which is exactly what you want in production environments.
 
 If you find yourself repeating resource blocks or copy-pasting similar code, take a step back. Try refactoring it using `locals` and `for_each`. Your future self — and your team — will thank you.
+
+**#Terraform #IaC #DevOps #InfrastructureAsCode #Cloud #30DaysOfDevOps**
