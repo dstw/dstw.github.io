@@ -3,7 +3,6 @@ layout: post
 title: "Demystifying DevOps: A Practical Guide for Beginners"
 date: 2025-05-23 06:31:00 +0700
 comments: true
-categories: DevOps SRE PlatformEngineering CICD TechLeadership
 ---
 
 This guide is designed to explain the key concepts of DevOps in a way that's both clear and practical. Each section not only defines a concept or principle but also includes a real-world example to illustrate how it works in practice. These stories are based on actual industry experiences and show how DevOps can solve real problems in real environments.
