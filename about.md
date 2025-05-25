@@ -59,6 +59,6 @@ with fellow enthusiasts, engineers, and anyone interested in enhancing software
 delivery processes and championing open-source values. Feel free to reach out to
 me via email at [didik dot swn at
 gmail.com](mailto:didik.swn+removethis@gmail.com) or connect with me on Twitter
-[@didik_swn](https://twitter.com/didik_swn). I'm always open to networking and
+[@didik_swn](https://twitter.com/dstw_x). I'm always open to networking and
 engaging in discussions. Thank you for visiting my DevOps blog. I hope you find
 the content both informative and inspiring.
