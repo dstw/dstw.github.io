@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Real-life Postmortem: Lessons from a Bad Deploy"
-date: 2025-05-26 05:18:21 +0700
+date: 2025-05-26 09:18:21 +0700
 comments: true
 ---
 
