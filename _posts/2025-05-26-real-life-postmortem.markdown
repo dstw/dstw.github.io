@@ -5,6 +5,8 @@ date: 2025-05-26 05:18:21 +0700
 comments: true
 ---
 
+![Real Life Postmortem Header](/assets/images/postmortem_500.png)
+
 It’s easy to get lulled into complacency when a deployment pipeline runs smoothly for months. The changes feel routine. The muscle memory kicks in. But it only takes one seemingly minor oversight to remind you that software systems are fragile—and production is always one bad deploy away from a wake-up call.
 
 > *“It was just a small config change—how bad could it be?”*
