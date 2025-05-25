@@ -4,6 +4,7 @@ url: https://dstw.github.io
 paginate: 1
 baseurl: ""
 permalink: pretty
+timezone: Asia/Jakarta
 
 # Gems
 plugins:
