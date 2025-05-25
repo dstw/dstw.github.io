@@ -5,6 +5,8 @@ date: 2025-05-25 10:33:09 +0700
 comments: true
 ---
 
+![AWS SSM Session Manager](/assets/images/aws_ssm_session_manager.png)
+
 ## Introduction
 
 For years, the industry-standard approach to securely access AWS EC2 instances has involved deploying jump hosts (also known as bastion hosts). These are intermediary servers that act as controlled gateways to your private instances, enabling SSH access while minimizing exposure to the public internet.
