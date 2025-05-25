@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Demystifying DevOps: A Practical Guide for Beginners"
-date: 2025-05-23 06:31:00 +0700
+date: 2025-05-23 07:31:00 +0700
 comments: true
 ---
 
