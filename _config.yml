@@ -28,12 +28,12 @@ sass:
 # Options
 
 # Replace this value and uncomment to enable Google Analytics tracking
-# ga_analytics: UA-000000-0
+ga_analytics: G-MR0ZDC4VWE
 
 # Specify the author for blog posts
 author:
   name: Didik Setiawan
-  url: https://twitter.com/didik_swn
+  url: https://twitter.com/dstw_x
   email: didik [dot] swn [at] gmail [dot] com
 
 # Custom vars
