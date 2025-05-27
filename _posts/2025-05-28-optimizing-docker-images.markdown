@@ -1,9 +1,11 @@
 ---
 layout: post
 title: "Optimizing Docker Images for CI/CD"
-date: 2025-05-27 22:43:32 +0700
+date: 2025-05-28 05:34:32 +0700
 comments: true
 ---
+
+![Optimizing Docker Images Illustration](/assets/images/optimizing_docker_image.png)
 
 As modern software development increasingly relies on containerization, Docker has become a cornerstone of Continuous Integration and Continuous Deployment (CI/CD) pipelines. However, without careful optimization, Docker images can become bloated, slow, and insecure — defeating their core purpose of being lightweight and portable.
 
