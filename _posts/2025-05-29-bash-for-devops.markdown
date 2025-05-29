@@ -126,8 +126,8 @@ You’ll see exactly what the script is doing, which helps identify subtle bugs�
 
 **So when should you use it?**
 
-✔️  During development or debugging
-❌ Not in production unless output is redirected and scrubbed
+✔️  During development or debugging  
+❌ Not in production unless output is redirected and scrubbed  
 ✔️  Only when explicitly enabled by a flag or environment variable
 
 ### Best Practice: Conditional Tracing with `DEBUG` Mode
