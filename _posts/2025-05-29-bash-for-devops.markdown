@@ -82,16 +82,108 @@ trap 'echo "Script exited cleanly."' EXIT
 
 Now, when something goes wrong, you know *where*.
 
-### Trace What Runs
+---
 
-Debug mode helps you understand what the script is doing:
+### Trace with `set -x` — See What Your Script is Doing
+
+Sometimes your Bash script doesn’t crash, but it still misbehaves. Maybe it’s skipping a step, passing the wrong variable, or silently doing something unexpected.
+
+This is where `set -x` shines. It enables **execution tracing**, printing every command and its arguments before they run.
+
+```bash
+set -x  # Turn on command tracing
+```
+
+Or, if you're running a script externally:
+
+```bash
+bash -x script.sh
+```
+
+**Example:**
 
 ```bash
 #!/usr/bin/env bash
-set -x  # or run with bash -x script.sh
+set -x
+
+name="world"
+echo "Hello, $name!"
 ```
 
-This prints each command before execution. Great during development.
+**Output:**
+
+```bash
++ name=world
++ echo 'Hello, world!'
+Hello, world!
+```
+
+You’ll see exactly what the script is doing, which helps identify subtle bugs—like incorrect substitutions, misordered logic, or silently failing branches.
+
+### Heads-up: `set -x` is Extremely Verbose
+
+> **⚠️ Warning:** `set -x` can generate a *flood of output*, especially in larger scripts or when looping over files, parsing input, or running background processes. It can also inadvertently log **sensitive data**—such as passwords in command-line arguments or environment variables.
+
+**So when should you use it?**
+
+* ✔️  During development or debugging
+* ❌ Not in production unless output is redirected and scrubbed
+* ✔️  Only when explicitly enabled by a flag or environment variable
+
+### Best Practice: Conditional Tracing with `DEBUG` Mode
+
+To avoid hardcoding `set -x` into your script, use a simple flag pattern like this:
+
+```bash
+[[ "${DEBUG:-0}" -eq 1 ]] && set -x
+```
+
+This checks whether the environment variable `DEBUG` is set to `1`. If so, it enables tracing.
+
+**Now you can run:**
+
+```bash
+./script.sh          # Normal mode
+DEBUG=1 ./script.sh  # Debug mode with tracing
+```
+
+You get debug output only when you *want* it — and your logs stay clean by default.
+
+### Optional: Support a `--debug` Flag
+
+If you prefer using CLI flags, add this:
+
+```bash
+DEBUG=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --debug) DEBUG=1 ;;
+  esac
+  shift
+done
+
+[[ "$DEBUG" -eq 1 ]] && set -x
+```
+
+Now you can run:
+
+```bash
+./script.sh --debug
+```
+
+### Protect Sensitive Data
+
+Always be mindful of what you log when `set -x` is active. For example:
+
+```bash
+PASSWORD="secret"
+curl -u "admin:$PASSWORD" https://example.com  # Will leak password in trace!
+```
+
+If your script deals with secrets, avoid enabling full tracing, or mask critical values before logging them.
+
+By using conditional `DEBUG` tracing, you maintain control over verbosity and security while keeping the powerful insights of `set -x` just a flag away.
 
 ---
 
