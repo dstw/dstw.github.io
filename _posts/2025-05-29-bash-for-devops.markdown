@@ -428,22 +428,22 @@ trap 'log "Script exited unexpectedly at line $LINENO"; exit 1' ERR
 trap 'log "Script completed."' EXIT
 ```
 
----
+### Error and Exit Traps
 
-Lastly, what is this?
+* Logs the line number on failure for easier debugging.
+* Confirms successful completion when the script ends.
+
+---
 
 ```bash
 main "$@"
 ```
 
+### Main Call
+
 This line calls the `main` function and passes **all command-line arguments** that were given to the script into it.
 
 In short: `main "$@"` = run `main()` with all script arguments, safely and cleanly.
-
-### Error and Exit Traps
-
-* Logs the line number on failure for easier debugging.
-* Confirms successful completion when the script ends.
 
 ---
 
