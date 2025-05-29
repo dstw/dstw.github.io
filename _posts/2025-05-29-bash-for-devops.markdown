@@ -126,9 +126,9 @@ You’ll see exactly what the script is doing, which helps identify subtle bugs�
 
 **So when should you use it?**
 
-* ✔️  During development or debugging
-* ❌ Not in production unless output is redirected and scrubbed
-* ✔️  Only when explicitly enabled by a flag or environment variable
+✔️  During development or debugging
+❌ Not in production unless output is redirected and scrubbed
+✔️  Only when explicitly enabled by a flag or environment variable
 
 ### Best Practice: Conditional Tracing with `DEBUG` Mode
 
@@ -228,7 +228,7 @@ When using commands like `rm`, `mv`, or `cp`, add verbosity (`-v`) and consider 
 
 ---
 
-## Testing Your Bash Scripts (Yes, It’s Possible!)
+## Testing Your Bash Scripts
 
 Testing isn't just for compiled languages or high-level frameworks. Bash scripts can and should be tested—especially if they're part of your infrastructure automation. The [Bats framework](https://github.com/bats-core/bats-core) makes this possible.
 
@@ -318,7 +318,42 @@ This lets you test Bash scripts like real software—automatically and reliably.
 
 ## Real-World Toolkit Example: Safe Cleanup Script
 
-Let’s walk through a practical script that safely deletes old log files, commonly used in log rotation or maintenance routines.
+Below is a production-safe Bash script to delete logs older than a certain number of days. It's structured, safe, and ready for automation or CI integration:
+
+```bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+LOG_DIR="/var/log/myapp"
+DAYS_TO_KEEP=7
+
+log() {
+  echo "[$(date +'%F %T')] $*"
+}
+
+clean_old_logs() {
+  log "Looking for files older than $DAYS_TO_KEEP days in $LOG_DIR"
+  find "$LOG_DIR" -type f -mtime +"$DAYS_TO_KEEP" -print -delete
+  log "Cleanup complete."
+}
+
+main() {
+  [[ -d "$LOG_DIR" ]] || {
+    log "Log directory not found: $LOG_DIR"
+    exit 1
+  }
+  clean_old_logs
+}
+
+trap 'log "Script exited unexpectedly at line $LINENO"' ERR
+trap 'log "Script completed."' EXIT
+
+main "$@"
+```
+
+Let’s walk through that script: safely deletes old log files, commonly used in log rotation or maintenance routines.
 
 ```bash
 #!/usr/bin/env bash
@@ -393,6 +428,18 @@ trap 'log "Script exited unexpectedly at line $LINENO"; exit 1' ERR
 trap 'log "Script completed."' EXIT
 ```
 
+---
+
+Lastly, what is this?
+
+```bash
+main "$@"
+```
+
+This line calls the `main` function and passes **all command-line arguments** that were given to the script into it.
+
+In short: `main "$@"` = run `main()` with all script arguments, safely and cleanly.
+
 ### Error and Exit Traps
 
 * Logs the line number on failure for easier debugging.
@@ -425,4 +472,4 @@ And most importantly—**trusted by your future self and your team.**
 
 Next time you write a script, don’t just make it work. Make it **engineered**.
 
-**#Bash #Scripting #30DaysOfDevOps**
+**#Bash #Scripting #ShellScript #30DaysOfDevOps**
