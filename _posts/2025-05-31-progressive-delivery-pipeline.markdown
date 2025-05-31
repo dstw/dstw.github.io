@@ -59,7 +59,7 @@ Before implementing progressive delivery, it's crucial to understand the **deplo
 
 ### Key Characteristics:
 
-* **Incremental exposure**: Traffic moves in stages (e.g., 10% → 30% → 100%)
+* **Incremental exposure**: Traffic moves in stages (e.g., 25% → 50% → 100%)
 * **Gate checks**: Health metrics dictate whether to proceed or halt
 * **Rollbacks**: Fast, automated rollback on failure
 * **Control points**: Manual approval or full automation
@@ -107,11 +107,11 @@ Here’s the high-level flow of our pipeline:
 
 ---
 
-## Step-by-Step Implementation
+## Step 1: Define the Argo Rollout Resource
 
-### 1. Define the Argo Rollout Resource
+The foundation of any progressive delivery pipeline using Argo Rollouts starts with replacing the standard Kubernetes `Deployment` object with a more intelligent and flexible `Rollout` resource. This custom resource gives us fine-grained control over how new versions of our application are introduced into a live environment, including support for strategies like **canary deployments**, **blue-green deployments**, and **automated metric-based analysis**.
 
-Here’s an example `Rollout` manifest for a canary deployment:
+Let’s break down a basic Rollout manifest configured for a **canary deployment** strategy:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -143,9 +143,71 @@ spec:
         - containerPort: 8080
 ```
 
-### 2. Create a GitHub Actions Workflow
+### Key Sections Explained
 
-Place this in `.github/workflows/deploy.yml`:
+#### `apiVersion`, `kind`, and `metadata`
+
+This identifies the resource as an Argo Rollout. By setting `kind: Rollout` and using Argo’s API group (`argoproj.io/v1alpha1`), we’re telling Kubernetes to delegate control of this workload to the **Argo Rollouts controller**, which manages more advanced deployment logic than a vanilla `Deployment`.
+
+#### `spec.replicas`
+
+We define the desired state of the application to run with four replicas. During a canary rollout, Argo will manage the distribution of these replicas between the **stable** and **canary** versions of your application, based on the rollout steps defined next.
+
+#### `strategy.canary.steps`
+
+This section is where the progressive magic happens. The canary strategy defines how new versions are incrementally exposed to users:
+
+* **`setWeight: 25`**
+  Shift 25% of traffic to the new version. This means 1 out of 4 replicas will run the updated container.
+
+* **`pause: { duration: 5m }`**
+  Wait for 5 minutes before proceeding. This window allows time to monitor key metrics like latency, errors, and CPU usage.
+
+* **`setWeight: 50`**
+  If everything looks healthy, move to 50% traffic — 2 out of 4 pods now run the new version.
+
+* **`pause: { duration: 5m }`**
+  Another pause for validation, helping catch any regressions before the full rollout.
+
+* **`setWeight: 100`**
+  At this point, the rollout is complete — all pods now run the new version.
+
+This step-based approach mitigates risk by enabling early detection of issues. If a problem is discovered during any pause, the rollout can be **automatically or manually aborted**, limiting the blast radius.
+
+#### `selector` and `template`
+
+The `selector` matches pods based on the `app: my-app` label, and the `template` defines the pod specification just like a standard Kubernetes Deployment.
+
+The `template.spec.containers.image` field is the most important here — this is where you specify the container image to deploy. In a GitOps workflow, this field will be updated dynamically (via GitHub Actions or Argo CD), and Argo Rollouts will detect the change to begin a new deployment cycle.
+
+> 💡 Tip: Always use **tagged images or digests** (e.g., `my-app:1.2.3` or `my-app@sha256:...`) instead of mutable tags like `latest` for predictable and traceable deployments.
+
+---
+
+### Why Use `Rollout` Instead of `Deployment`?
+
+While a Kubernetes `Deployment` supports basic strategies like **rolling updates**, it lacks built-in support for:
+
+* Gradual traffic shifting
+* Health-based gating
+* Real-time metric analysis
+* Automated rollback
+
+By using `Rollout`, we unlock the full spectrum of **progressive delivery capabilities**, allowing safer, observable, and more controlled software releases in production.
+
+---
+
+In the next step, we’ll wire up this rollout with a GitHub Actions workflow that builds and publishes a container image, and automatically updates this manifest to trigger the deployment process.
+
+---
+
+## Step 2: Create a GitHub Actions Workflow
+
+Once the Argo Rollout manifest is in place, the next step is to **automate the build and deployment process** using GitHub Actions. This pipeline ensures that every code change pushed to the `main` branch results in a new container image, an updated Kubernetes manifest, and a progressive rollout via Argo.
+
+Here’s a straightforward example of a GitHub Actions workflow file to achieve this:
+
+> **`.github/workflows/deploy.yml`**
 
 ```yaml
 name: CI/CD Pipeline
@@ -184,21 +246,97 @@ jobs:
         git commit -am "Update image to ${{ github.sha }}"
         git push
 ```
+---
 
-> Optionally, if you're using **Argo CD** with GitOps, it will automatically detect the manifest change and sync it to the cluster.
+### What This Workflow Does
+
+Let’s break it down step by step:
+
+#### 1. Trigger on Push to `main`
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+```
+
+The workflow triggers automatically whenever new code is pushed to the `main` branch — typically after merging a pull request. This ensures production deployments only occur after explicit approvals.
 
 ---
 
-## Integrating Observability
+#### 2. Build and Push the Docker Image
 
-To make progressive delivery meaningful, it must be tied to observable metrics. Argo Rollouts supports real-time analysis with:
+```yaml
+docker build -t ghcr.io/your-org/my-app:${{ github.sha }} .
+docker push ghcr.io/your-org/my-app:${{ github.sha }}
+```
+
+This command:
+
+* Builds a Docker image from the current repository.
+* Tags the image with the short SHA of the commit (e.g., `a1b2c3d`).
+* Pushes it to the [GitHub Container Registry](https://ghcr.io).
+
+> Using commit SHAs as tags ensures that each deployment is uniquely versioned and easy to trace back to a specific code change.
+
+---
+
+#### 3. Update the Argo Rollout Manifest
+
+```bash
+sed -i "s|ghcr.io/your-org/my-app:.*|ghcr.io/your-org/my-app:${{ github.sha }}|" k8s/rollout.yaml
+```
+
+This `sed` command modifies the `image:` field in the `rollout.yaml` manifest to reference the freshly built image.
+
+This is the change Argo CD (or another GitOps controller) will detect — triggering a new progressive rollout using the updated container.
+
+---
+
+#### 4. Commit and Push the Manifest
+
+```bash
+git commit -am "Update image to ${{ github.sha }}"
+git push
+```
+
+Once the manifest is updated, we commit and push it back to the repository. This creates a GitOps-compatible workflow — where **Git is the source of truth** for deployment state.
+
+> 💡 Tip: Make sure Argo CD is configured to watch this repository and path so it can pick up the change automatically.
+
+---
+
+This GitHub Actions workflow creates a clean, end-to-end CI/CD process:
+
+1. **Detects changes** on the `main` branch.
+2. **Builds and pushes** a new Docker image to GHCR.
+3. **Updates** the rollout manifest with the new image tag.
+4. **Commits and pushes** the change to Git.
+5. **Triggers Argo Rollouts** to begin a progressive canary deployment.
+
+All of this happens without needing to manually tweak YAML or run deployment scripts — just commit your code and push.
+
+---
+
+## Step 3: Integrate Observability for Safe Progressive Delivery
+
+Progressive delivery is only as effective as the insights you gather during rollouts. Without proper observability, canary strategies become guesswork. Argo Rollouts addresses this by integrating with popular monitoring tools to **automatically evaluate metrics** during each rollout step.
+
+### Real-Time Analysis with Metrics
+
+Argo Rollouts supports built-in integrations with several observability platforms:
 
 * **Prometheus**
-* **New Relic**
 * **Datadog**
+* **New Relic**
 * **Wavefront**
 
-Example `analysisTemplate`:
+These tools provide the telemetry required to make intelligent rollout decisions — such as **pausing**, **promoting**, or **aborting** a deployment based on live traffic behavior.
+
+### Example: Prometheus-Based Analysis
+
+Here’s an `AnalysisTemplate` that evaluates HTTP success rates using Prometheus:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -219,30 +357,110 @@ spec:
             sum(rate(http_requests_total[1m])) * 100
 ```
 
-Attach this template to your rollout under `spec.strategy.canary.analysis`.
+**What this does:**
+
+* Every **1 minute**, it runs the query.
+* Repeats this **3 times**.
+* Expects a **success rate > 95%** to consider the step healthy.
+
+This template can be attached to your rollout under the canary strategy:
+
+```yaml
+strategy:
+  canary:
+    steps:
+      - setWeight: 25
+      - pause: { duration: 5m }
+      - analysis:
+          templates:
+            - templateName: success-rate-check
+```
+
+This ensures each phase of the rollout is **guarded by real-time health checks**.
 
 ---
 
-## 🧪 Manual Promotion & Rollback
+### Manual Promotion and Rollback
 
-Use `kubectl argo rollouts` or the [Argo Rollouts Dashboard](https://argoproj.github.io/argo-rollouts/dashboard/) to promote or abort deployments:
+Even with automation in place, you may occasionally need to intervene manually — especially during production rollouts.
+
+Argo Rollouts provides a CLI (`kubectl argo rollouts`) and a web-based dashboard to:
+
+* **Check rollout status**
+* **Manually promote** to the next step
+* **Abort** an unhealthy rollout immediately
+
+### Useful Commands:
 
 ```bash
+# Check rollout status
 kubectl argo rollouts get rollout my-app
+
+# Promote to the next canary step
 kubectl argo rollouts promote my-app
+
+# Abort the rollout (revert to stable)
 kubectl argo rollouts abort my-app
 ```
 
+> Pro tip: You can also use Slack or Prometheus alerts to notify engineers before manual intervention is needed.
+
 ---
 
-## Best Practices for Progressive Delivery
+## Best Practices for Safe Rollouts
 
-* **Start with staging**: Use progressive delivery in lower environments first.
-* **Decouple deploy from release**: Use feature flags to separate code deployment from feature exposure.
-* **Automate observability**: Rollouts should halt or rollback based on real metrics.
-* **Immutable images**: Always deploy using image digests or commit-based tags.
-* **Fail fast**: Set tight error budgets and rollback on first signs of failure.
-* **Document your rollout plans**: Define steps, thresholds, and rollback conditions explicitly.
+To keep your progressive delivery strategy both **safe** and **repeatable**, follow these best practices:
+
+### Pin Image Tags
+
+Avoid using `:latest`. Always tag Docker images with Git SHAs:
+
+```bash
+ghcr.io/your-org/my-app:<commit-sha>
+```
+
+This guarantees immutability and traceability across builds.
+
+---
+
+### Use GitOps Principles
+
+Let Git be the single source of truth. Commit all manifest changes (including rollout strategies and analysis templates) to version control. This:
+
+* Enables rollbacks via `git revert`
+* Provides a full audit trail
+* Encourages peer-reviewed configuration changes
+
+---
+
+### Monitor During Pauses
+
+During each pause step (`pause: { duration: 5m }`), closely observe dashboards, metrics, and logs. For extra safety:
+
+* Set up alerts based on metric degradation
+* Notify your team via Slack or PagerDuty
+
+---
+
+### Segment Traffic with Ingress or Service Mesh
+
+Progressive rollouts are most effective when paired with **traffic segmentation**. Use tools like:
+
+* **NGINX Ingress Controller**
+* **Istio**
+* **Linkerd**
+
+This enables targeting only a subset of users or regions with the new version before promoting it globally.
+
+---
+
+### Define Tight Error Budgets
+
+Fail fast. Don’t wait until customers complain. Instead:
+
+* Define strict **success conditions** (e.g., success rate > 95%, latency < 500ms)
+* Abort the rollout automatically if those conditions aren't met
+* Rely on Argo Rollouts' integration with metrics to enforce this
 
 ---
 
