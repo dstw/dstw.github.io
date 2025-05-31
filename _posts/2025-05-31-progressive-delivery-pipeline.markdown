@@ -209,6 +209,7 @@ Here’s a straightforward example of a GitHub Actions workflow file to achieve 
 
 > **`.github/workflows/deploy.yml`**
 
+{% raw %}
 ```yaml
 name: CI/CD Pipeline
 
@@ -246,6 +247,7 @@ jobs:
         git commit -am "Update image to ${{ github.sha }}"
         git push
 ```
+{% endraw %}
 ---
 
 ### What This Workflow Does
