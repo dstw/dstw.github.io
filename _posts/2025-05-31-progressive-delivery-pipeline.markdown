@@ -113,6 +113,7 @@ The foundation of any progressive delivery pipeline using Argo Rollouts starts w
 
 Let’s break down a basic Rollout manifest configured for a **canary deployment** strategy:
 
+{% raw %}
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
@@ -142,6 +143,7 @@ spec:
         ports:
         - containerPort: 8080
 ```
+{% endraw %}
 
 ### Key Sections Explained
 
@@ -256,12 +258,14 @@ Let’s break it down step by step:
 
 #### 1. Trigger on Push to `main`
 
+{% raw %}
 ```yaml
 on:
   push:
     branches:
       - main
 ```
+{% endraw %}
 
 The workflow triggers automatically whenever new code is pushed to the `main` branch — typically after merging a pull request. This ensures production deployments only occur after explicit approvals.
 
@@ -269,10 +273,12 @@ The workflow triggers automatically whenever new code is pushed to the `main` br
 
 #### 2. Build and Push the Docker Image
 
+{% raw %}
 ```yaml
 docker build -t ghcr.io/your-org/my-app:${{ github.sha }} .
 docker push ghcr.io/your-org/my-app:${{ github.sha }}
 ```
+{% endraw %}
 
 This command:
 
@@ -340,6 +346,7 @@ These tools provide the telemetry required to make intelligent rollout decisions
 
 Here’s an `AnalysisTemplate` that evaluates HTTP success rates using Prometheus:
 
+{% raw %}
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
@@ -358,6 +365,7 @@ spec:
             sum(rate(http_requests_total{status=~"2.."}[1m])) / 
             sum(rate(http_requests_total[1m])) * 100
 ```
+{% endraw %}
 
 **What this does:**
 
@@ -367,6 +375,7 @@ spec:
 
 This template can be attached to your rollout under the canary strategy:
 
+{% raw %}
 ```yaml
 strategy:
   canary:
@@ -377,6 +386,7 @@ strategy:
           templates:
             - templateName: success-rate-check
 ```
+{% endraw %}
 
 This ensures each phase of the rollout is **guarded by real-time health checks**.
 
