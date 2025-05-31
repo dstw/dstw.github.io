@@ -113,7 +113,7 @@ The foundation of any progressive delivery pipeline using Argo Rollouts starts w
 
 Let’s break down a basic Rollout manifest configured for a **canary deployment** strategy:
 
-```
+```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -209,7 +209,7 @@ Here’s a straightforward example of a GitHub Actions workflow file to achieve 
 
 > **`.github/workflows/deploy.yml`**
 
-```
+```yaml
 name: CI/CD Pipeline
 
 on:
@@ -254,7 +254,7 @@ Let’s break it down step by step:
 
 #### 1. Trigger on Push to `main`
 
-```
+```yaml
 on:
   push:
     branches:
@@ -267,7 +267,7 @@ The workflow triggers automatically whenever new code is pushed to the `main` br
 
 #### 2. Build and Push the Docker Image
 
-```
+```yaml
 docker build -t ghcr.io/your-org/my-app:${{ github.sha }} .
 docker push ghcr.io/your-org/my-app:${{ github.sha }}
 ```
@@ -338,7 +338,7 @@ These tools provide the telemetry required to make intelligent rollout decisions
 
 Here’s an `AnalysisTemplate` that evaluates HTTP success rates using Prometheus:
 
-```
+```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
@@ -365,7 +365,7 @@ spec:
 
 This template can be attached to your rollout under the canary strategy:
 
-```
+```yaml
 strategy:
   canary:
     steps:
