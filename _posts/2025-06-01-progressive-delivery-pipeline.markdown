@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Designing a Progressive Delivery Pipeline with GitHub Actions and Argo Rollouts"
-date: 2025-05-31 20:18:22 +0700
+date: 2025-06-01 06:15:55 +0700
 comments: true
 ---
 
@@ -88,7 +88,7 @@ Argo Rollouts is a Kubernetes controller and set of CRDs (Custom Resource Defini
 
 * Canary deployments
 * Blue-green deployments
-* Progressive analysis using Prometheus, Wavefront, and others
+* Progressive analysis using Prometheus, Datadog, New Relic and others
 
 Together, they form a complete pipeline for building, testing, and deploying apps with confidence.
 
@@ -342,7 +342,6 @@ Argo Rollouts supports built-in integrations with several observability platform
 * **Prometheus**
 * **Datadog**
 * **New Relic**
-* **Wavefront**
 
 These tools provide the telemetry required to make intelligent rollout decisions — such as **pausing**, **promoting**, or **aborting** a deployment based on live traffic behavior.
 
@@ -489,3 +488,5 @@ Fail fast. Don’t wait until customers complain. Instead:
 **Progressive delivery** is about strategy, not tooling. Tools like **GitHub Actions** and **Argo Rollouts** make it easier, but the value lies in how well you manage **risk, observability, and user exposure**.
 
 By blending GitOps, canary rollouts, and real-time telemetry, your team can move faster—without sacrificing safety or sleep.
+
+**#CICD #Tools #Deployment #30DaysOfDevOps**
