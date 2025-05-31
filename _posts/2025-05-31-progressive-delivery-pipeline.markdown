@@ -292,9 +292,11 @@ This command:
 
 #### 3. Update the Argo Rollout Manifest
 
+{% raw %}
 ```bash
 sed -i "s|ghcr.io/your-org/my-app:.*|ghcr.io/your-org/my-app:${{ github.sha }}|" k8s/rollout.yaml
 ```
+{% endraw %}
 
 This `sed` command modifies the `image:` field in the `rollout.yaml` manifest to reference the freshly built image.
 
@@ -304,10 +306,12 @@ This is the change Argo CD (or another GitOps controller) will detect — trigge
 
 #### 4. Commit and Push the Manifest
 
+{% raw %}
 ```bash
 git commit -am "Update image to ${{ github.sha }}"
 git push
 ```
+{% endraw %}
 
 Once the manifest is updated, we commit and push it back to the repository. This creates a GitOps-compatible workflow — where **Git is the source of truth** for deployment state.
 
@@ -404,6 +408,7 @@ Argo Rollouts provides a CLI (`kubectl argo rollouts`) and a web-based dashboard
 
 ### Useful Commands:
 
+{% raw %}
 ```bash
 # Check rollout status
 kubectl argo rollouts get rollout my-app
@@ -414,6 +419,7 @@ kubectl argo rollouts promote my-app
 # Abort the rollout (revert to stable)
 kubectl argo rollouts abort my-app
 ```
+{% endraw %}
 
 > Pro tip: You can also use Slack or Prometheus alerts to notify engineers before manual intervention is needed.
 
@@ -427,9 +433,11 @@ To keep your progressive delivery strategy both **safe** and **repeatable**, fol
 
 Avoid using `:latest`. Always tag Docker images with Git SHAs:
 
+{% raw %}
 ```bash
 ghcr.io/your-org/my-app:<commit-sha>
 ```
+{% endraw %}
 
 This guarantees immutability and traceability across builds.
 
