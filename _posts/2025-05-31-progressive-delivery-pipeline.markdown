@@ -5,9 +5,9 @@ date: 2025-05-31 20:18:22 +0700
 comments: true
 ---
 
-**Progressive delivery** isn’t just a buzzword—it's a strategic evolution of continuous delivery practices aimed at safer, more controlled releases. While tools like **GitHub Actions** (CI/CD automation) and **Argo Rollouts** (Kubernetes-native canary and blue-green deployment controller) are excellent enablers, the underlying value comes from the **deployment strategy** and **observability-first mindset**.
+In the age of cloud-native applications and DevOps practices, software delivery is evolving beyond traditional CI/CD pipelines. Progressive delivery—a modern approach that includes strategies like canary releases, blue-green deployments, and feature flags—enables safer, controlled rollouts to production.
 
-This article walks through the design of a modern progressive delivery pipeline—starting with a grounding in **deployment strategies**, then progressing through a tool-agnostic pipeline architecture, with GitHub Actions and Argo Rollouts as practical examples. We'll also touch on popular **alternatives** at each stage.
+In this post, we’ll walk through how to design a **progressive delivery pipeline using GitHub Actions** for CI and **Argo Rollouts** for advanced Kubernetes deployment strategies.
 
 ---
 
@@ -66,482 +66,172 @@ Before implementing progressive delivery, it's crucial to understand the **deplo
 
 > Progressive delivery is the evolution of continuous delivery—it prioritizes **safety**, **observability**, and **granular control** over **speed alone**.
 
----
+### **Key benefits:**
 
-## Designing the Pipeline
-
-A typical progressive delivery pipeline includes these core stages:
-
-1. **CI: Build & Test**
-   Use GitHub Actions to run tests, build Docker images, and push them to a container registry.
-
-2. **CD: Push Artifact & Update Manifests**
-   Automatically update Kubernetes manifests (e.g., image tag) and push to a Git repo.
-    📌 Git becomes the source of truth.
-
-3. **GitOps Sync**
-   Argo CD detects changes and syncs them to the cluster. It ensures that your live state matches Git.
-
-4. **Progressive Rollout & Metrics Evaluation**
-   Argo Rollouts gradually shifts traffic to the new version (e.g., 10% → 30% → 100%), with pauses for metric checks.
-
-5. **Promotion / Rollback Decisioning**
-   Use metrics (e.g., error rate from Prometheus) to auto-promote or rollback. Optional manual approval gates.
+* **Reduced risk** in production.
+* **Faster feedback** loops.
+* **Better observability** for changes.
 
 Let’s break this down using **GitHub Actions** + **Argo Rollouts**.
 
 ---
 
-## Stage 1: Continuous Integration (CI)
+## Tooling Overview
 
-### **Goal:**
+### GitHub Actions
 
-Build, test, and package your application automatically on every change to ensure it's **always in a deployable state**.
+GitHub Actions is a powerful CI/CD automation platform tightly integrated with GitHub repositories. It can build, test, and package your application on every pull request or push.
 
-### **What Happens in This Stage:**
+### Argo Rollouts
 
-1. **Trigger:**
+Argo Rollouts is a Kubernetes controller and set of CRDs (Custom Resource Definitions) that provides advanced deployment strategies like:
 
-   * A developer pushes code to the `main` or `feature` branch on GitHub.
-   * GitHub Actions detects the change and starts the CI workflow.
+* Canary deployments
+* Blue-green deployments
+* Progressive analysis using Prometheus, Wavefront, and others
 
-2. **Checkout Code:**
-
-   * Uses the `actions/checkout@v3` action to pull the latest source code.
-
-3. **Run Unit Tests and Static Checks:**
-
-   * Executes language-specific tests (e.g., `npm test`, `go test`, `pytest`).
-   * Runs linters (e.g., ESLint, Flake8) to enforce coding standards.
-
-4. **Build Docker Image:**
-
-   * Compiles the application and builds a Docker image.
-   * Tags the image using the Git SHA to uniquely identify the build (`myapp:<SHA>`).
-
-5. **Push to Registry:**
-
-   * Pushes the built image to a container registry (e.g., GitHub Container Registry, ECR, GCR, Docker Hub).
+Together, they form a complete pipeline for building, testing, and deploying apps with confidence.
 
 ---
 
-### **Example GitHub Actions CI Workflow**
+## Pipeline Architecture
 
-```yaml
-name: CI
+Here’s the high-level flow of our pipeline:
 
-on:
-  push:
-    branches: [main]
-
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
-      - name: Run tests
-        run: |
-          make test  # Or any test runner
-
-      - name: Build and push Docker image
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t ghcr.io/myorg/myapp:$IMAGE_TAG .
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u USERNAME --password-stdin
-          docker push ghcr.io/myorg/myapp:$IMAGE_TAG
-```
----
-
-### **Why This Stage Matters**
-
-* **Shift-left testing:** Catches errors early.
-* **Repeatability:** Ensures builds are consistent and reproducible.
-* **Speed:** Automated builds reduce manual effort.
-* **Auditability:** Each image is traceable to a Git commit.
+1. **Code Push**: A developer pushes code to GitHub.
+2. **CI Workflow**: GitHub Actions builds the app, runs tests, and pushes the container image to a registry.
+3. **CD Trigger**: GitHub Actions updates the Kubernetes manifest or Rollout resource in a Git repo (GitOps).
+4. **Argo Rollouts**: Kubernetes picks up the change and rolls it out using a canary or blue-green strategy.
+5. **Metrics Check**: Rollouts are monitored based on success metrics (e.g., via Prometheus).
+6. **Auto Promotion or Rollback**: Depending on metrics and manual judgment, the rollout proceeds or aborts.
 
 ---
 
-## Stage 2: Continuous Delivery (Manifest Update)
+## Step-by-Step Implementation
 
-### **Goal:**
+### 1. Define the Argo Rollout Resource
 
-Update the container image reference in a Kubernetes manifest (using Argo Rollouts for progressive deployment), then commit and push this change to Git. This triggers Argo CD to apply the update automatically.
-
----
-
-### Prerequisites:
-
-* You're using **GitHub Actions** for CI/CD.
-* Your Kubernetes manifest is a plain YAML file — typically an `Argo Rollout` resource, not a standard `Deployment`.
-* Argo CD is set up to monitor the Git repository for changes.
-* Argo Rollouts is installed in the cluster and replaces your standard Deployment object.
-
----
-
-### Argo Rollout Manifest Example (`rollout.yaml`):
+Here’s an example `Rollout` manifest for a canary deployment:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: myapp
-spec:
-  replicas: 3
-  strategy:
-    canary:
-      steps:
-        - setWeight: 20
-        - pause: {duration: 30s}
-        - setWeight: 60
-        - pause: {duration: 60s}
-  selector:
-    matchLabels:
-      app: myapp
-  template:
-    metadata:
-      labels:
-        app: myapp
-    spec:
-      containers:
-        - name: myapp
-          image: ghcr.io/myorg/myapp:oldsha
-          ports:
-            - containerPort: 8080
-```
-
-Your CI job's output will be a new image tag like `ghcr.io/myorg/myapp:<sha>` that you need to update in this manifest.
-
----
-
-### GitHub Actions Job to Update the Image Tag
-
-```yaml
-jobs:
-  update-rollout-manifest:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout manifest repository
-        uses: actions/checkout@v3
-        with:
-          repository: myorg/k8s-manifests
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: main
-
-      - name: Update Rollout manifest with new image
-        run: |
-          NEW_IMAGE_TAG="ghcr.io/myorg/myapp:${{ github.sha }}"
-          sed -i "s|image: .*|image: ${NEW_IMAGE_TAG}|" path/to/rollout.yaml
-
-      - name: Commit and push changes
-        run: |
-          git config user.name "ci-bot"
-          git config user.email "ci@bot.com"
-          git add path/to/rollout.yaml
-          git commit -m "Update rollout image to ${{ github.sha }}"
-          git push origin main
-```
-
-> **Note:** Make sure your GitHub Actions runner has permission to push changes to the manifest repo (`GITHUB_TOKEN` must have `contents: write` scope).
-
----
-
-### What Happens After
-
-* Argo CD, which continuously watches the `main` branch of the manifest repository, detects the updated `rollout.yaml`.
-* It applies the change to the cluster.
-* Argo Rollouts takes over the actual deployment:
-
-  * Starts rolling out the new image.
-  * Follows the defined canary strategy (e.g., 20% → 60% → 100%).
-  * Pauses as defined between steps.
-
----
-
-### Benefits of This Approach
-
-* **Simple & native:** No extra templating tools needed.
-* **Traceable:** Every rollout is versioned in Git.
-* **Safe rollout:** Canary strategy is enforced by Argo Rollouts.
-* **Rollback-ready:** Reverting the Git commit reverts the deployment.
-
----
-
-## Stage 3: GitOps Sync (CD Trigger)
-
-### **Goal:**
-
-Deploy the updated manifest from GitHub directly to your Kubernetes cluster by triggering a rollout via GitHub Actions.
-
----
-
-### Context:
-
-Since we're **not using a GitOps controller** like Argo CD, the sync between Git and the cluster will be **manually triggered by GitHub Actions** — but we still follow GitOps principles:
-
-* **Declare state in Git**
-* **Update manifests via commits**
-* **Drive deployments via version control**
-
----
-
-### What Happens in This Stage:
-
-1. **GitHub Actions updates the manifest** (done in Stage 2).
-2. In this stage, the same or subsequent GitHub Actions job will:
-
-   * Connect to the Kubernetes cluster.
-   * Apply the updated manifest using `kubectl`.
-   * This triggers Argo Rollouts to begin a progressive rollout (canary or blue-green).
-
----
-
-### GitHub Actions Example for Manual Sync
-
-```yaml
-jobs:
-  sync-to-cluster:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout updated manifests
-        uses: actions/checkout@v3
-
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-
-      - name: Authenticate with Kubernetes
-        run: |
-          echo "${KUBE_CONFIG}" > kubeconfig.yaml
-          export KUBECONFIG=$PWD/kubeconfig.yaml
-
-      - name: Apply the rollout manifest
-        run: |
-          kubectl apply -f path/to/rollout.yaml
-```
-
-> Replace `KUBE_CONFIG` with your base64-encoded kubeconfig, stored as a GitHub Actions secret.
-
-### What This Triggers:
-
-* **Argo Rollouts sees a new image tag** in the `Rollout` manifest.
-* It **initiates a progressive delivery** strategy (canary, blue-green, etc.) as defined in the spec.
-* The rollout proceeds through its steps — controlled by `setWeight`, `pause`, and optionally, manual promotion.
-
-This stage completes the delivery loop — syncing Git changes into the cluster without relying on any external CD tool other than Argo Rollouts, while still preserving the spirit of GitOps: Git is the source of truth.
-
----
-
-## Stage 4: Progressive Rollout (Canary Deployment)
-
-### **Goal:**
-
-Gradually roll out the new version of your application to a subset of users, monitor it, and promote it to full production **step by step**, using the native capabilities of **Argo Rollouts**.
-
----
-
-### What Is a Canary Deployment (again)?
-
-A **canary deployment** gradually shifts traffic from the stable (old) version of an application to a new version in controlled steps. It allows you to catch issues early, reduce blast radius, and roll back if needed — all **without downtime**.
-
----
-
-### Example Argo Rollout Spec (Canary Strategy):
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Rollout
-metadata:
-  name: myapp
+  name: my-app
 spec:
   replicas: 4
   strategy:
     canary:
-      canaryService: myapp-canary
-      stableService: myapp-stable
       steps:
-        - setWeight: 20
-        - pause: {duration: 1m}
-        - setWeight: 60
-        - pause: {}
+        - setWeight: 25
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+        - setWeight: 100
   selector:
     matchLabels:
-      app: myapp
+      app: my-app
   template:
     metadata:
       labels:
-        app: myapp
+        app: my-app
     spec:
       containers:
-        - name: myapp
-          image: ghcr.io/myorg/myapp:<new-sha>
+      - name: my-app
+        image: ghcr.io/your-org/my-app:latest
+        ports:
+        - containerPort: 8080
 ```
+
+### 2. Create a GitHub Actions Workflow
+
+Place this in `.github/workflows/deploy.yml`:
+
+```yaml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t ghcr.io/your-org/my-app:${{ github.sha }} .
+        docker push ghcr.io/your-org/my-app:${{ github.sha }}
+
+    - name: Update rollout manifest
+      run: |
+        sed -i "s|ghcr.io/your-org/my-app:.*|ghcr.io/your-org/my-app:${{ github.sha }}|" k8s/rollout.yaml
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git commit -am "Update image to ${{ github.sha }}"
+        git push
+```
+
+> Optionally, if you're using **Argo CD** with GitOps, it will automatically detect the manifest change and sync it to the cluster.
+
 ---
 
-### Step-by-Step Rollout Process
+## Integrating Observability
 
-1. **New Rollout Applied:**
-   The updated manifest with a new image tag is applied (from Stage 3). This triggers Argo Rollouts to begin a new rollout.
+To make progressive delivery meaningful, it must be tied to observable metrics. Argo Rollouts supports real-time analysis with:
 
-2. **First Step - 20% Traffic to New Version:**
-   Argo Rollouts updates **20% of the pods** with the new image and routes **20% of traffic** to `myapp-canary` (if configured with ingress or service mesh).
+* **Prometheus**
+* **New Relic**
+* **Datadog**
+* **Wavefront**
 
-3. **Pause for 1 Minute:**
-   During this pause, Argo Rollouts waits. You can:
+Example `analysisTemplate`:
 
-   * Manually inspect the rollout via `kubectl argo rollouts get rollout myapp`.
-   * Run tests or checks to validate the new version.
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate-check
+spec:
+  metrics:
+    - name: success-rate
+      interval: 1m
+      count: 3
+      successCondition: result > 95
+      provider:
+        prometheus:
+          address: http://prometheus-server
+          query: |
+            sum(rate(http_requests_total{status=~"2.."}[1m])) / 
+            sum(rate(http_requests_total[1m])) * 100
+```
 
-4. **Second Step - 60% Traffic:**
-   Argo Rollouts proceeds to update more pods and route more traffic:
-
-   * Now **60%** of traffic goes to the new version.
-
-5. **Pause Indefinitely:**
-   The rollout pauses, waiting for a **manual promotion**. This is useful if you want a final approval step before full rollout.
-
-6. **Manual Promotion (optional):**
-   If you're satisfied with the canary, promote it using the CLI:
-
-   ```bash
-   kubectl argo rollouts promote myapp
-   ```
-
-7. **Rollout Completes:**
-   All pods are updated to the new version. The `stableService` now points to the new version.
+Attach this template to your rollout under `spec.strategy.canary.analysis`.
 
 ---
 
-### Monitoring Rollouts
+## 🧪 Manual Promotion & Rollback
 
-You can monitor rollout progress in real-time:
+Use `kubectl argo rollouts` or the [Argo Rollouts Dashboard](https://argoproj.github.io/argo-rollouts/dashboard/) to promote or abort deployments:
 
 ```bash
-kubectl argo rollouts get rollout myapp --watch
+kubectl argo rollouts get rollout my-app
+kubectl argo rollouts promote my-app
+kubectl argo rollouts abort my-app
 ```
-
-This shows:
-
-* Status (Paused / Progressing / Healthy / Aborted)
-* Current step and weight
-* Number of updated pods
-* Errors (if any)
-
----
-
-### If Something Goes Wrong
-
-You can **abort** the rollout at any time:
-
-```bash
-kubectl argo rollouts abort myapp
-```
-
-This will:
-
-* Revert traffic to the stable version
-* Scale down the canary pods
-
----
-
-## Stage 5: Metrics-Driven Decisions
-
-### Goal:
-
-* Use **automated checks** where safe (e.g., staging).
-* Allow **manual judgment** where needed (e.g., production).
-* Blend both paths with GitHub Actions + Argo Rollouts.
-
----
-
-## Option A: Automated Promotion (Safe Environments)
-
-### How It Works:
-
-1. After rollout pauses at a step (`pause: {duration: 2m}` or `pause: {}`), GitHub Actions:
-
-   * Polls the rollout status.
-   * Runs a **scripted health check** (e.g., `curl`, `kubectl logs`, exit codes).
-   * If the app is healthy, it automatically promotes:
-
-```yaml
-- name: Check rollout status
-  run: |
-    STATUS=$(kubectl argo rollouts get rollout myapp -o jsonpath='{.status.pauseConditions}')
-    echo "Pause Status: $STATUS"
-
-- name: Run health check (basic)
-  run: |
-    curl -f http://myapp-canary.my-namespace.svc.cluster.local/health || exit 1
-
-- name: Promote rollout if healthy
-  if: success()
-  run: kubectl argo rollouts promote myapp
-```
-
-This gives you **auto-promotion logic**, driven by GitHub Actions.
-
----
-
-## Option B: Manual Promotion (Critical Environments)
-
-### How It Works:
-
-1. Rollout pauses with `pause: {}` (indefinite).
-2. GitHub Actions sends a Slack/email/PR comment (if configured).
-3. Engineers:
-
-   * View dashboards, logs, alerts.
-   * Use `kubectl argo rollouts promote` or `abort` based on judgment.
-
-```yaml
-- name: Notify about manual gate
-  run: echo "Canary rollout paused. Please inspect and run 'kubectl argo rollouts promote myapp' manually."
-```
-
-You can also add an **approval step** in GitHub Actions:
-
-```yaml
-- name: Await manual approval
-  uses: hmarr/auto-approve-action@v2
-  if: github.event_name == 'pull_request'
-```
-
-Or simply wait for human input via a CLI tool, Slack ping, or dashboard review.
-
----
-
-## Hybrid Strategy (Best of Both)
-
-Combine both strategies:
-
-* Use **automated checks** for basic validations.
-* Pause rollout indefinitely for **final manual confirmation**.
-
-Example `Rollout` steps:
-
-```yaml
-steps:
-  - setWeight: 20
-  - pause: {duration: 2m}    # auto-checks + auto-promote
-  - setWeight: 60
-  - pause: {}                # manual gate before full rollout
-```
----
-
-## Summary
-
-| Strategy         | When to Use               | How                                     |
-| ---------------- | ------------------------- | --------------------------------------- |
-| Auto Promotion   | Staging/dev               | GitHub Action health checks + `promote` |
-| Manual Promotion | Production                | Human verifies + uses `kubectl promote` |
-| Hybrid           | Most real-world pipelines | Auto partial → manual final approval    |
 
 ---
 
