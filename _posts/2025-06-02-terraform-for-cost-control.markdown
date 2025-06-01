@@ -656,6 +656,152 @@ jobs:
 
 ---
 
+## Example: AWS Cost Allocation Using Terraform Tagging Strategy
+
+### Scenario
+
+Let’s say your organization runs multiple projects in a shared AWS account:
+
+* **Project A**: `billing-app`
+* **Project B**: `inventory-system`
+
+Both are deployed across `dev`, `staging`, and `prod` environments. You want to **track monthly AWS spend per project and environment** to enforce budgets and accountability.
+
+---
+
+## Step 1: Define Common Tagging Strategy in Terraform
+
+We create a `locals` block for tag reuse:
+
+```hcl
+locals {
+  common_tags = {
+    ManagedBy   = "Terraform"
+    CostCenter  = "FIN-001"
+    Department  = "Engineering"
+  }
+
+  project_a_tags = merge(local.common_tags, {
+    Project     = "billing-app"
+    Environment = "prod"
+    Owner       = "alice@company.com"
+  })
+
+  project_b_tags = merge(local.common_tags, {
+    Project     = "inventory-system"
+    Environment = "staging"
+    Owner       = "bob@company.com"
+  })
+}
+```
+
+And apply to resources:
+
+```hcl
+resource "aws_instance" "billing_app_ec2" {
+  ami           = "ami-xyz"
+  instance_type = "t3.medium"
+  tags          = local.project_a_tags
+}
+
+resource "aws_s3_bucket" "inventory_logs" {
+  bucket = "inventory-system-logs"
+  tags   = local.project_b_tags
+}
+```
+
+---
+
+## Step 2: AWS Cost Breakdown with Tags
+
+Assume that for **May 2025**, the **AWS Cost Explorer** returns this tagged usage summary:
+
+| Tag\:Project     | Tag\:Environment | Resource Type | Monthly Cost (USD) |
+| ---------------- | ---------------- | ------------- | ------------------ |
+| billing-app      | prod             | EC2           | \$120.00           |
+| billing-app      | prod             | RDS           | \$80.00            |
+| inventory-system | staging          | S3            | \$15.00            |
+| inventory-system | staging          | Lambda        | \$5.00             |
+
+---
+
+## Step 3: Calculating Total Spend by Tag
+
+We can **aggregate cost per project and environment** using the tag keys:
+
+### Project Billing Summary
+
+| Project          | Total Monthly Cost       |
+| ---------------- | ------------------------ |
+| billing-app      | \$120 + \$80 = **\$200** |
+| inventory-system | \$15 + \$5 = **\$20**    |
+
+### Environment Breakdown
+
+| Environment | Total Monthly Cost |
+| ----------- | ------------------ |
+| prod        | \$200              |
+| staging     | \$20               |
+
+> This enables teams to compare usage, identify outliers, and apply internal chargebacks.
+
+---
+
+## Step 4: Chargeback Formula
+
+If your company applies an **internal IT tax (e.g., 10%)** on infrastructure for cost recovery, you can calculate:
+
+```text
+Chargeback = Total Cost × (1 + IT Tax %)
+```
+
+For example:
+
+* **billing-app**:
+  `Chargeback = $200 × (1 + 0.10) = $220`
+
+* **inventory-system**:
+  `Chargeback = $20 × 1.10 = $22`
+
+---
+
+## Step 5: Enabling Tag-Based Cost Allocation in AWS
+
+1. Go to AWS Console → Billing → **Cost Allocation Tags**
+2. Enable the custom tags like `Project`, `Environment`, `Owner`, `CostCenter`
+3. Use AWS Cost Explorer or Athena to query:
+
+### Sample Athena Query:
+
+```sql
+SELECT
+  resource_tags.project AS project,
+  resource_tags.environment AS environment,
+  ROUND(SUM(unblended_cost), 2) AS total_cost
+FROM
+  "aws_cur"."cost_and_usage_report"
+WHERE
+  usage_start_date BETWEEN DATE '2025-05-01' AND DATE '2025-05-31'
+GROUP BY
+  resource_tags.project,
+  resource_tags.environment
+ORDER BY
+  total_cost DESC;
+```
+
+---
+
+## Conclusion
+
+With this tagging strategy:
+
+* **Teams are accountable** for their AWS usage.
+* **Finance can apply cost controls** and budget alerts per project.
+* **DevOps can optimize infrastructure** by identifying high-cost resources.
+* **Security can audit ownership** through the `Owner` tag.
+
+---
+
 ## Best Practices Summary
 
 | Practice                            | Benefit                                              |
