@@ -1,9 +1,11 @@
 ---
 layout: post
 title: "Terraform Tagging Strategy for AWS Cost Control"
-date: 2025-05-01 13:59:38 +0700
+date: 2025-06-02 07:46:55 +0700
 comments: true
 ---
+
+![Terraform Tag and Cost Illustration](/assets/images/terraform_tag.png)
 
 In any cloud-native environment, particularly within AWS, resource sprawl is a common challenge. Without a clear tagging strategy, organizations often struggle with visibility, ownership, cost control, and compliance. Terraform, as a leading Infrastructure as Code (IaC) tool, enables DevOps teams to standardize and automate the deployment of resources — and with it, their tagging strategies.
 
