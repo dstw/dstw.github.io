@@ -5,6 +5,8 @@ date: 2025-06-01 06:15:55 +0700
 comments: true
 ---
 
+![Progressive Deployment](/assets/images/github_actions_argo.png)
+
 In the age of cloud-native applications and DevOps practices, software delivery is evolving beyond traditional CI/CD pipelines. Progressive delivery—a modern approach that includes strategies like canary releases, blue-green deployments, and feature flags—enables safer, controlled rollouts to production.
 
 In this post, we’ll walk through how to design a **progressive delivery pipeline using GitHub Actions** for CI and **Argo Rollouts** for advanced Kubernetes deployment strategies.
