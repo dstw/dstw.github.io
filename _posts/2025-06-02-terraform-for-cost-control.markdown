@@ -820,6 +820,7 @@ With this tagging strategy:
 Tagging isn't just a best practice — it's a **critical pillar for cost control, accountability, and operational clarity in AWS**. By embedding a smart tagging strategy into your Terraform workflows, you empower your teams to scale infrastructure responsibly and transparently.
 
 Remember: **tag early, tag often, and tag consistently**.
+
 **#Terraform #AWS #CostOptimization #30DaysOfDevOps**
 
 ---
