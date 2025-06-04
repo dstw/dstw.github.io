@@ -5,7 +5,7 @@ date: 2025-06-04 04:26:37 +0700
 comments: true
 ---
 
-![DevOps Culture Illustration](/assets/images/devops_culture.png)
+![DevOps Culture Illustration](/assets/images/devops_culture.jpg)
 
 DevOps is fundamentally a cultural movement—not just a set of tools or processes. At its core, it’s about **people, collaboration, and shared responsibility**. Without a supportive culture, even the best technology and automation can fall flat.
 
