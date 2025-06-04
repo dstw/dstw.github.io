@@ -5,7 +5,7 @@ date: 2025-06-04 04:26:37 +0700
 comments: true
 ---
 
-![DevOps Culture Illustration](assets/images/)
+![DevOps Culture Illustration](/assets/images/devops_culture.png)
 
 DevOps is fundamentally a cultural movement—not just a set of tools or processes. At its core, it’s about **people, collaboration, and shared responsibility**. Without a supportive culture, even the best technology and automation can fall flat.
 
@@ -104,10 +104,10 @@ Modern DevOps toolchains are designed to create this transparency across teams:
 * **Version Control Systems (GitHub, GitLab, Bitbucket):**
   These platforms are more than just code repositories. They provide a central place where developers collaborate via pull requests (or merge requests), conduct code reviews, track issues, and discuss feature requirements. When operations or QA teams are integrated into this workflow, they gain direct insight into code changes before deployment.
 
-* **CI/CD Pipelines (Jenkins, GitLab CI/CD, CircleCI):**
+* **CI/CD Pipelines (Jenkins, GitLab CI/CD, GitHub Actions, CircleCI):**
   Automated build, test, and deployment pipelines give real-time feedback about the status of software changes. Teams can instantly see if a build passes or fails, which tests are broken, and whether deployments succeed or require rollback. This visibility encourages quicker fixes and fosters a culture of accountability.
 
-* **ChatOps (Slack, Microsoft Teams + integrations):**
+* **ChatOps (Slack, Microsoft Teams, Mattermost):**
   Real-time messaging platforms integrated with DevOps tools enable seamless collaboration around incidents, deployments, or monitoring alerts. For example, when a Kubernetes deployment fails, notifications can be posted automatically in a shared Slack channel where developers and operators can troubleshoot together immediately. This reduces handoffs and speeds up incident resolution.
 
 * **Monitoring and Observability (Prometheus, Grafana, Datadog, ELK Stack):**
@@ -165,7 +165,7 @@ Automation empowers teams to take ownership with confidence and efficiency by pr
 * **Infrastructure as Code (IaC): Terraform, Ansible, Pulumi**
   These tools allow teams to define infrastructure—servers, networking, databases—in code. Teams can version control infrastructure configurations alongside application code, making infrastructure changes auditable, repeatable, and testable. IaC reduces reliance on operations specialists for manual provisioning and empowers developers or site reliability engineers (SREs) to manage infrastructure confidently.
 
-* **CI/CD Pipelines (Jenkins, GitLab CI/CD, CircleCI, Azure DevOps)**
+* **CI/CD Pipelines (Jenkins, GitLab CI/CD, GitHub Actions, CircleCI)**
   Automated pipelines build, test, and deploy applications whenever code changes are committed. This automation eliminates manual steps, reduces human error, and gives immediate feedback on code health. Developers owning these pipelines can iterate quickly and control deployment timing, reinforcing their accountability for the entire delivery process.
 
 * **Containerization and Orchestration (Docker, Kubernetes, OpenShift)**
@@ -244,16 +244,16 @@ This mindset is crucial for fostering:
 
 Technology alone can’t fix cultural attitudes toward failure, but tools can help embed learning practices into workflows:
 
-* **Blameless Postmortems (Tools: Jira, Confluence, GitLab Issues)**
+* **Blameless Postmortems (Tools: Jira, Confluence, GitLab/GitHub Issues)**
   After an incident or failure, teams conduct structured, blameless retrospectives documented in tools like Jira or Confluence. The goal is to uncover root causes, not assign fault. These documented learnings become reference points for future prevention.
 
-* **Incident Management Platforms (PagerDuty, Opsgenie, VictorOps)**
+* **Incident Management Platforms (PagerDuty, Opsgenie)**
   Automated incident alerting and on-call management help teams respond quickly. Post-incident reviews linked directly to alerts facilitate rapid feedback loops and shared learning.
 
 * **Monitoring and Observability (Prometheus, Grafana, Datadog)**
   Detailed metrics and logs help teams understand failure contexts and patterns. Continuous monitoring allows early detection and root cause analysis, turning failures into data-driven learning opportunities.
 
-* **Chaos Engineering Tools (Gremlin, Chaos Monkey)**
+* **Chaos Engineering Tools (Gremlin, Chaos Monkey, LitmusChaos)**
   These tools intentionally inject failures into systems to test resilience. By practicing “safe failure,” teams become comfortable with errors, learn how systems behave under stress, and design more robust architectures.
 
 ---
@@ -323,16 +323,16 @@ Fast feedback loops are the mechanisms through which teams get timely, relevant 
 
 #### Tools That Foster Trust and Feedback Loops
 
-* **CI/CD Platforms (Jenkins, GitLab CI/CD, Azure DevOps):**
+* **CI/CD Platforms (Jenkins, GitLab CI/CD, GitHub Actions):**
   They automate testing and deployments, reduce manual errors, and create a shared pipeline where every commit is validated, fostering confidence and speed.
 
-* **Collaboration Platforms (Slack, Microsoft Teams with integrations):**
+* **Collaboration Platforms (Slack, Microsoft Teams):**
   Instant communication around pipeline status, alerts, or incidents builds trust and speeds up decision-making.
 
 * **Monitoring & Observability (Prometheus, Grafana, Datadog, New Relic):**
   Dashboards and alerts ensure teams have clear visibility and can act on issues immediately.
 
-* **Feature Flagging Tools (LaunchDarkly, Unleash):**
+* **Feature Flagging Tools (LaunchDarkly, Unleash, Flagsmith):**
   Enable controlled releases and rapid rollback of features without redeploying code, allowing safe experimentation and faster feedback.
 
 ---
