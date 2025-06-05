@@ -372,7 +372,7 @@ This reduces manual errors and enforces consistent policy across all tenant envi
 
 ---
 
-## 🌐 Network Policies for Tenant Isolation
+## Network Policies for Tenant Isolation
 
 Network security and traffic segmentation are critical in a multi-tenant Kubernetes environment. While namespaces provide **logical** separation of resources, by default Kubernetes networking is **flat**, meaning pods in any namespace can communicate freely across the cluster. This openness poses risks in a multi-tenant setup where one tenant’s workloads should not have unrestricted network access to others.
 
@@ -915,14 +915,14 @@ Use these to generate showback/chargeback reports and drive financial accountabi
 
 ### Summary: When to Use What
 
-| Tool/Pattern       | Use For                          |
-| ------------------ | -------------------------------- |
-| Kyverno/Gatekeeper | Policy enforcement & governance  |
-| Kubecost/OpenCost  | Cost tracking per tenant         |
-| ArgoCD/Flux        | GitOps delivery per tenant       |
-| Karpenter/CA       | Dynamic node scaling             |
-| Calico/Cilium      | Network isolation                |
-| Goldilocks         | Resource tuning and optimization |
+| Tool/Pattern                      | Use For                          |
+| --------------------------------- | -------------------------------- |
+| Kyverno/Gatekeeper                | Policy enforcement & governance  |
+| Kubecost/OpenCost                 | Cost tracking per tenant         |
+| ArgoCD/Flux                       | GitOps delivery per tenant       |
+| Karpenter/Cluster Autoscaler (CA) | Dynamic node scaling             |
+| Calico/Cilium                     | Network isolation                |
+| Goldilocks                        | Resource tuning and optimization |
 
 ---
 
