@@ -5,7 +5,9 @@ date: 2025-06-06 18:18:00 +0700
 comments: true
 ---
 
-## 🧩 *“It Works on My Machine” — 5 CI/CD Debugging Stories That Didn’t Care*
+![Debugging Pipeline Illustration](/assets/images/debug_pipeline.jpg)
+
+# *“It Works on My Machine” —  "What 5 CI/CD Failures Taught Us About Shipping Software"*
 
 In modern development, CI/CD pipelines are the backbone of shipping fast, safe, and consistent software. We trust them to be reliable, reproducible, and immune to the quirks of individual developer environments.
 
@@ -39,7 +41,7 @@ Whether you're a DevOps engineer, software developer, or tech lead, this post ai
 
 ---
 
-## 🚨 The Situation: Unexpected CI Failure on a Hotfix Branch
+# 🔍 The Situation: Unexpected CI Failure on a Hotfix Branch
 
 We maintain a moderately complex Node.js microservice that runs automated builds and tests on every push using GitHub Actions. One Friday afternoon, just before a minor production hotfix, we noticed something odd:
 
@@ -77,7 +79,7 @@ jobs:
 
 ---
 
-## 🔍 Step 1: Reading the Logs
+## Step 1: Reading the Logs
 
 The first rule of debugging CI: **always read the logs carefully.** In our case, the failure was during the `npm install` step:
 
@@ -91,7 +93,7 @@ Looks like a dependency conflict. But why now?
 
 ---
 
-## 🔍 Step 2: Reproducing Locally
+## Step 2: Reproducing Locally
 
 To isolate the problem, we tried the following on a fresh clone:
 
@@ -101,13 +103,13 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
-💥 Boom — same error locally.
+Boom — same error locally.
 
 This confirmed that the issue was not GitHub-specific but a real dependency resolution problem. After checking the `package.json` file, we realized that the version range of `some-package` was loose, and the new release (published just hours ago) had introduced breaking changes.
 
 ---
 
-## 🛠️ Step 3: Locking Down Dependencies
+## Step 3: Locking Down Dependencies
 
 This was an **example of a non-deterministic CI pipeline** due to non-locked dependencies. We resolved it by:
 
@@ -133,22 +135,22 @@ This was an **example of a non-deterministic CI pipeline** due to non-locked dep
    git push origin hotfix/fix-cors
    ```
 
-✅ CI passed.
+CI passed.
 
 ---
 
-## 🔄 Step 4: Improving Pipeline Robustness
+## Step 4: Improving Pipeline Robustness
 
 After resolving the immediate issue, we took time to make the pipeline more robust against similar issues in the future.
 
-### ✅ Added a Dependency Audit Step
+### Added a Dependency Audit Step
 
 ```yaml
 - name: Audit Dependencies
   run: npm audit --audit-level=moderate
 ```
 
-### ✅ Enforced Dependency Locking with `package-lock.json`
+### Enforced Dependency Locking with `package-lock.json`
 
 We added a lint step to verify the lockfile is committed and not out-of-sync:
 
@@ -158,13 +160,13 @@ We added a lint step to verify the lockfile is committed and not out-of-sync:
     git diff --exit-code package-lock.json || (echo "package-lock.json modified. Run npm install and commit changes." && exit 1)
 ```
 
-### ✅ Introduced Dependency Pinning Policy
+### Introduced Dependency Pinning Policy
 
 We enforced a policy to use exact versions for all production dependencies.
 
 ---
 
-## 🧠 Lessons Learned
+## Lessons Learned
 
 ### 1. **Always Read the Logs.**
 
@@ -194,17 +196,17 @@ If CI is failing but your app still “works,” don’t ignore it. It’s a sig
 
 ---
 
-## 🧰 Bonus: Tools to Help Debug GitHub Actions Faster
+## Extra: Tools to Help Debug GitHub Actions Faster
 
 * **act**: Run GitHub Actions locally. Great for quick iteration.
-  👉 [https://github.com/nektos/act](https://github.com/nektos/act)
+  [https://github.com/nektos/act](https://github.com/nektos/act)
 * **tmate**: Add an SSH debug session during CI runs.
-  👉 [https://github.com/marketplace/actions/debug-with-tmate](https://github.com/marketplace/actions/debug-with-tmate)
+  [https://github.com/marketplace/actions/debug-with-tmate](https://github.com/marketplace/actions/debug-with-tmate)
 * **workflow\_run**: Trigger downstream jobs conditionally if upstream CI passes.
 
 ---
 
-## 📦 Final Thoughts
+## Chapter Summary
 
 CI pipelines are the safety net for modern software teams. But they’re not immune to the entropy of ever-changing dependencies and environments.
 
@@ -212,7 +214,7 @@ By adopting strict versioning, reading logs carefully, and investing in proper d
 
 ---
 
-### ✅ TL;DR Checklist for Debugging Broken GitHub Actions:
+Checklist for Debugging Broken GitHub Actions:
 
 * [x] Review logs in detail
 * [x] Try to reproduce locally
@@ -223,7 +225,7 @@ By adopting strict versioning, reading logs carefully, and investing in proper d
 
 ---
 
-# Debugging a Broken CI Pipeline in GitHub Actions: When It *Only* Fails in CI
+# 🐍 Debugging a Broken CI Pipeline in GitHub Actions: When It *Only* Fails in CI
 
 > “It works on my machine” — a phrase that sends shivers down every DevOps engineer's spine.
 
@@ -233,7 +235,7 @@ In this blog, we walk through a real-world example of this exact scenario, how w
 
 ---
 
-## ⚠️ The Incident: CI Failing on a Merge Request, but Local Works Fine
+## The Incident: CI Failing on a Merge Request, but Local Works Fine
 
 Our engineering team was preparing a feature branch merge for a Python Flask API. The GitHub Actions workflow ran tests on all PRs to `main`. But suddenly:
 
@@ -296,7 +298,7 @@ Turns out `Flask 2.2` pulls in `Werkzeug 3.0`, which had removed `url_quote`. Lo
 
 ---
 
-## 🧠 Step 2: Why CI Behaves Differently Than Local
+## Step 2: Why CI Behaves Differently Than Local
 
 CI builds from scratch. No caching. No environment pollution.
 
@@ -306,7 +308,7 @@ Lesson: *If it’s not pinned, it’s not predictable.*
 
 ---
 
-## 🛠️ Step 3: Pin Everything
+## Step 3: Pin Everything
 
 To avoid future surprises, we:
 
@@ -337,7 +339,7 @@ Now both local and CI environments use the same packages.
 
 ---
 
-## 🔁 Step 4: Making CI Fail More Transparently
+## Step 4: Making CI Fail More Transparently
 
 The CI failure message originally gave no clue *why* the import broke. We updated our `pytest.ini` to include:
 
@@ -362,7 +364,7 @@ We also used GitHub's `upload-artifact` action to persist test logs:
 
 ---
 
-## 🧪 Bonus: Use Matrix Testing to Detect Version-Specific Failures
+## Extra: Use Matrix Testing to Detect Version-Specific Failures
 
 To prevent future version mismatches, we introduced matrix testing:
 
@@ -376,27 +378,27 @@ This caught other hidden issues and ensured forward compatibility.
 
 ---
 
-## 💡 Key Takeaways
+## Key Takeaways
 
-### 🔧 1. CI is your clean room
+### 1. CI is your clean room
 
 CI environments start fresh. That’s a blessing for reproducibility, but a curse for hidden local assumptions.
 
-### 📌 2. Pin dependencies aggressively
+### 2. Pin dependencies aggressively
 
 Lock versions of both direct and transitive dependencies in production software, especially in Python.
 
-### 🧹 3. Validate your assumptions
+### 3. Validate your assumptions
 
 Use tools like `pip freeze`, logging, and artifact upload to add transparency to failures.
 
-### 🧰 4. Use local CI emulators
+### 4. Use local CI emulators
 
 Try [`act`](https://github.com/nektos/act) to simulate GitHub Actions locally, and spot divergence early.
 
 ---
 
-## 🧵 TL;DR: Checklist When CI Fails but Local Passes
+## Checklist When CI Fails but Local Passes
 
 * [x] Compare package versions with `pip freeze`, `npm ls`, or `composer show`.
 * [x] Print runtime logs in CI to see context (`log_cli` or verbose flags).
@@ -406,7 +408,7 @@ Try [`act`](https://github.com/nektos/act) to simulate GitHub Actions locally, a
 
 ---
 
-## 📦 Final Thoughts
+## Chapter Summary
 
 The worst CI bugs are the ones you *can't* reproduce. But they're also the most valuable to fix—because they expose hidden assumptions in your build and deployment process.
 
@@ -414,13 +416,13 @@ The next time CI fails mysteriously, treat it as a signal. It’s not just a fai
 
 ---
 
-# Debugging a Broken GitHub Actions Pipeline in a PHP Project (When CI Breaks but Your Laptop Doesn't)
+# 🐘 Debugging a Broken GitHub Actions Pipeline in a PHP Project (When CI Breaks but Your Laptop Doesn't)
 
 When maintaining a PHP web application, you may have your code, tests, and tools working perfectly on your development machine — only to have your CI pipeline break with a cryptic error. This is the story of such a case in a Laravel project.
 
 ---
 
-## 🧩 The Scenario: PHPStan Fails Only in CI
+## The Scenario: PHPStan Fails Only in CI
 
 We recently introduced [PHPStan](https://phpstan.org/) — a popular static analysis tool — into our Laravel-based project. Locally, `vendor/bin/phpstan analyse` ran cleanly.
 
@@ -466,7 +468,7 @@ We were stuck. Why would PHPStan crash in CI?
 
 ---
 
-## 🕵️ Step 1: Investigate the Stack Trace
+## Step 1: Investigate the Stack Trace
 
 PHPStan’s error pointed to something like:
 
@@ -478,7 +480,7 @@ This is standard Laravel usage. But the trace revealed that **autoloading failed
 
 ---
 
-## 🛠️ Step 2: Composer Autoload and Caching
+## Step 2: Composer Autoload and Caching
 
 We enabled verbose logging in CI:
 
@@ -510,13 +512,13 @@ We were using this caching block:
 
 We commented out the cache — and CI passed.
 
-🎯 **Root Cause Identified**: The Composer cache stored a `vendor` directory built under an older PHP version and outdated dependencies. The autoloader became invalid in the new environment, breaking class resolution.
+**Root Cause Identified**: The Composer cache stored a `vendor` directory built under an older PHP version and outdated dependencies. The autoloader became invalid in the new environment, breaking class resolution.
 
 ---
 
-## ✅ Step 3: Fixes Implemented
+## Step 3: Fixes Implemented
 
-### ✅ Use Composer Cache *Correctly*
+### Use Composer Cache *Correctly*
 
 Never cache `vendor/` directly unless you're absolutely certain of environment parity.
 
@@ -532,13 +534,13 @@ We switched to caching only the Composer cache directory:
 
 This allowed Composer to re-download packages if needed, but still benefit from caching.
 
-### ✅ Enforce Clean Builds
+### Enforce Clean Builds
 
 We added a `composer validate` and `composer install --no-scripts --no-autoloader` step to detect inconsistencies.
 
 ---
 
-## 🛡️ Step 4: Harden the CI Pipeline
+## Step 4: Harden the CI Pipeline
 
 To ensure we never cache `vendor/` again by mistake, we added a CI lint check:
 
@@ -573,9 +575,9 @@ jobs:
 
 ---
 
-## 🔁 Recap: CI Breaks but Local Works — in PHP
+## Recap: CI Breaks but Local Works — in PHP
 
-| 🔍 Symptom                           | ✅ Root Cause                                 |
+| Symptom                              | Root Cause                                 |
 | ------------------------------------ | -------------------------------------------- |
 | `Class not found` in PHPStan         | Composer cache from stale `vendor/` dir      |
 | CI only fails, local works fine      | Local uses valid autoload from fresh install |
@@ -583,27 +585,27 @@ jobs:
 
 ---
 
-## 💡 Key Takeaways
+## Key Takeaways
 
-### 🚫 1. Don't cache `vendor/` in CI
+### 1. Don't cache `vendor/` in CI
 
 It introduces subtle, environment-specific bugs. Use Composer’s internal cache instead.
 
-### 🛠️ 2. Validate Composer and Autoload
+### 2. Validate Composer and Autoload
 
 Add checks like `composer validate`, `composer dump-autoload`, and version consistency in CI.
 
-### 🔍 3. Isolate Static Analysis
+### 3. Isolate Static Analysis
 
 Run tools like PHPStan or Psalm in a clean, separate job — not mixed with build/test.
 
-### 🧪 4. Use verbose flags in CI
+### 4. Use verbose flags in CI
 
 More logs = faster debugging. Use `-v` or `--debug` for Composer, PHPUnit, PHPStan, etc.
 
 ---
 
-## 📦 Final Words
+## Chapter Summary
 
 CI/CD pipelines are the gatekeepers of code quality. When they break for reasons that don’t happen locally, they expose gaps in reproducibility and environment isolation.
 
@@ -619,6 +621,236 @@ Sometimes, the best debugging tool is to rebuild from scratch — the same way y
 
 ---
 
+# 🦫 When Go CI Fails but Local Works: Debugging a Non-Reproducible Build Error in GitHub Actions
+
+**"Works on my machine"** — we’ve all heard it. But when you're dealing with Go projects and a broken GitHub Actions pipeline, that phrase suddenly means **more debugging**, **less shipping**.
+
+This post covers a real-world debugging scenario where a Go project failed to build **only in CI**, despite working flawlessly on every local machine.
+
+---
+
+## The Scenario: Build Fails in GitHub Actions, Works Locally
+
+Our team maintains a Go CLI tool. Developers could build and test it locally with:
+
+```bash
+go build ./...
+go test ./...
+```
+
+No errors. Smooth as butter.
+
+But in CI, the job started failing with:
+
+```text
+main.go:10:2: cannot find package "github.com/example/lib" in any of:
+	/usr/local/go/src/github.com/example/lib (from $GOROOT)
+	/home/runner/go/src/github.com/example/lib (from $GOPATH)
+```
+
+Confusing. The import existed, and `go.mod` included it:
+
+```go
+module github.com/ourteam/cli-tool
+
+go 1.21
+
+require (
+	github.com/example/lib v1.2.3
+)
+```
+
+The failing GitHub Actions workflow:
+
+```yaml
+name: Go CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Build
+        run: go build ./...
+```
+
+---
+
+## Step 1: Check for `go mod tidy` Drift
+
+First suspect: dependency resolution drift.
+
+We added a step:
+
+```yaml
+- name: Run go mod tidy check
+  run: |
+    go mod tidy
+    git diff --exit-code
+```
+
+Sure enough, CI reported a dirty diff. The `go.mod` and `go.sum` had missing indirect dependencies that weren’t caught locally — because some devs had the lib cached.
+
+**Clue 1: Inconsistent module state**
+
+---
+
+## Step 2: Network or Auth Issue?
+
+But why did Go **fail to download** `github.com/example/lib`?
+
+We realized the package was **in a private GitHub repository**!
+
+Locally, everyone had GitHub SSH access or personal access tokens configured. CI did not.
+
+---
+
+## Step 3: Fixing Access to Private Modules
+
+To access private Go modules in GitHub Actions, you must set the `GOPRIVATE` environment variable **and authenticate Git**.
+
+We added the following to our workflow:
+
+```yaml
+- name: Configure Git for private modules
+  run: |
+    git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+    git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "git@github.com:"
+
+- name: Set Go env for private repos
+  run: |
+    go env -w GOPRIVATE=github.com/example/*
+```
+
+Alternatively, using `netrc`:
+
+```yaml
+- name: Authenticate Git for private repos
+  run: |
+    cat <<EOF > ~/.netrc
+machine github.com
+login ${{ secrets.GITHUB_ACTOR }}
+password ${{ secrets.GITHUB_TOKEN }}
+EOF
+```
+
+And explicitly:
+
+```yaml
+env:
+  GOPRIVATE: github.com/example/*
+```
+
+CI could now download and build the dependency successfully.
+
+---
+
+## Step 4: Harden the Pipeline
+
+We added:
+
+1. **A `go mod tidy` check** to prevent future drift
+2. **A test step with verbose output**:
+
+   ```yaml
+   - run: go test -v ./...
+   ```
+3. **Separate workflow for dependency linting**:
+
+   ```yaml
+   name: Go Lint
+
+   on: [pull_request]
+
+   jobs:
+     tidy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v3
+         - uses: actions/setup-go@v4
+           with:
+             go-version: 1.21
+         - run: go mod tidy
+         - run: git diff --exit-code
+   ```
+
+---
+
+## Lessons Learned
+
+| Problem                 | Root Cause                          | Solution                  |
+| ----------------------- | ----------------------------------- | ------------------------- |
+| Package not found in CI | Private module, no GitHub token     | Configure Git + GOPRIVATE |
+| Local works, CI fails   | Devs had cached modules or SSH auth | CI didn’t                 |
+| go.mod drift            | Missing `go mod tidy` step          | Add it with diff check    |
+
+---
+
+## Key Takeaways
+
+### 1. Treat CI as your source of truth
+
+Always build/test from scratch in a clean environment — that's what your users do.
+
+### 2. Handle Private Modules Properly
+
+Set `GOPRIVATE`, authenticate Git with `GITHUB_TOKEN`, and never assume access.
+
+### 3. Validate `go.mod` and `go.sum`
+
+Use `go mod tidy` and enforce diffs in PRs.
+
+### 4. Explicit is better than implicit
+
+Always define dependencies and environment variables. Avoid relying on local caching.
+
+---
+
+## Extra: Minimal Working Setup for Go Private Modules in GitHub Actions
+
+```yaml
+env:
+  GOPRIVATE: github.com/example/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21
+
+      - name: Auth GitHub for Go
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - run: go mod tidy
+      - run: go build ./...
+      - run: go test ./...
+```
+
+---
+
+## Chapter Summary
+
+This case shows how subtle mismatches between **CI environments and local development** can lead to frustrating bugs. Go's powerful module system works best when the environment is clean, the dependencies are explicit, and network access is properly configured.
+
+Let your CI be your "compiler of truth" — and treat local success as just a first step.
+
+---
+
 # 🐳 When Docker Betrays You: Debugging a CI/CD Cache Issue That Doesn't Happen Locally
 
 **"It builds fine on my machine."**
@@ -628,7 +860,7 @@ This is the story of a subtle Docker caching bug that broke our production deplo
 
 ---
 
-## 🎯 The Context
+## The Context
 
 We were working on a PHP microservice deployed as a Docker container. Our `Dockerfile` used multi-stage builds for better performance and caching:
 
@@ -647,19 +879,19 @@ COPY . .
 CMD ["php", "index.php"]
 ```
 
-Everything was fine locally. CI built it. We deployed it. But then… 🎭
+Everything was fine locally. CI built it. We deployed it. But then…
 
 ---
 
-## 🧨 The Problem: Outdated Source Code in Production
+## The Problem: Outdated Source Code in Production
 
 After a successful build and push from GitHub Actions, we deployed the image to ECS.
 
 But our new features were **not showing up**. Somehow, it was running **old code**.
 
-🤯 Logs showed the application running with a previous release.
-🤖 CI logs said everything built successfully.
-✅ Tag was `myapp:latest` — exactly as expected.
+* Logs showed the application running with a previous release.
+* CI logs said everything built successfully.
+* Tag was `myapp:latest` — exactly as expected.
 
 Locally, everything worked. Even pushing manually from a local machine resulted in the correct behavior.
 
@@ -667,7 +899,7 @@ So what was going on?
 
 ---
 
-## 🔍 Step 1: Check the Build Logs
+## Step 1: Check the Build Logs
 
 We added verbose output to our GitHub Actions workflow:
 
@@ -695,7 +927,7 @@ jobs:
           tags: myorg/myapp:latest
 ```
 
-🪵 We noticed this:
+We noticed this:
 
 ```
 #3 [internal] load metadata for docker.io/library/php:8.2-cli
@@ -709,7 +941,7 @@ The output said the image was built and pushed — but it didn't actually **rebu
 
 ---
 
-## 🤯 Step 2: Understand What Docker Is Caching
+## Step 2: Understand What Docker Is Caching
 
 The critical line in the Dockerfile:
 
@@ -727,7 +959,7 @@ The problem was that our GitHub Actions runner didn’t always detect a code cha
 
 ---
 
-## 🧪 Step 3: Reproduce Locally (You Can’t)
+## Step 3: Reproduce Locally (You Can’t)
 
 On a dev laptop, changes to the working directory **always** invalidated the Docker cache:
 
@@ -741,7 +973,7 @@ But in GitHub Actions, Docker used **BuildKit remote caching** unless told other
 
 ---
 
-## 🛠️ Step 4: Force Cache Invalidation in CI
+## Step 4: Force Cache Invalidation in CI
 
 We added an explicit cache key and Git SHA:
 
@@ -769,7 +1001,7 @@ This tiny `ARG` acts as a **cache buster** — forcing Docker to re-evaluate the
 
 ---
 
-## 🧩 Bonus Fix: Don't Copy Everything Blindly
+## Extra: Don't Copy Everything Blindly
 
 To avoid copying test files, `.git`, or random unneeded files, we added a `.dockerignore`:
 
@@ -784,7 +1016,7 @@ That sped up CI and avoided unexpected cache pollution.
 
 ---
 
-## 🔒 Step 5: Harden the Pipeline
+## Step 5: Harden the Pipeline
 
 We added:
 
@@ -800,7 +1032,7 @@ We added:
 
 ---
 
-## 🧠 Lessons Learned
+## Lessons Learned
 
 | Issue                       | Root Cause                          | Fix                                         |
 | --------------------------- | ----------------------------------- | ------------------------------------------- |
@@ -810,7 +1042,7 @@ We added:
 
 ---
 
-## ✅ Key Takeaways
+## Key Takeaways
 
 1. **Docker cache is powerful — and dangerous** in CI if not controlled.
 2. **GitHub Actions uses BuildKit and layer caching across jobs** — this can lead to stale images.
@@ -820,7 +1052,7 @@ We added:
 
 ---
 
-## 🧭 Final Thoughts
+## Chapter Summary
 
 CI/CD is often about finding edge cases your local environment hides. Docker's smart caching is a blessing for speed — but it will happily give you yesterday's leftovers if you're not careful.
 
@@ -828,7 +1060,7 @@ Always assume **CI has a memory**, and sometimes it remembers the wrong things.
 
 ----
 
-## 🧯 CI/CD as a First-Class Citizen in Your Debugging Mindset
+# 🧯 CI/CD as a First-Class Citizen in Your Debugging Mindset
 
 These stories highlight a simple but often neglected truth: **your pipeline is part of your product**.
 
@@ -847,9 +1079,6 @@ But also:
 * “What assumptions am I making about CI behavior?”
 * “What’s different between CI and local?”
 
-**Good CI pipelines are invisible when they work. Great engineers investigate them when they don’t.**
+Good CI pipelines are invisible when they work. Great engineers investigate them when they don’t.
 
-Make your CI/CD system something you understand — not just something you inherit.
-And always remember:
-
-> If it works on your machine, but not in CI — **CI is right.**
+**#CICD #Troubleshooting #30DaysOfDevOps**
