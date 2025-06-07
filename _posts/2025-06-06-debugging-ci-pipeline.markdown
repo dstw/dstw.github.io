@@ -1,13 +1,15 @@
 ---
 layout: post
-title: "Debugging a Broken CI Pipeline in GitHub Actions: A Real-World Walkthrough"
+title: "Debugging a Broken CI Pipeline in GitHub Actions"
 date: 2025-06-06 18:18:00 +0700
 comments: true
 ---
 
 ![Debugging Pipeline Illustration](/assets/images/debug_pipeline.jpg)
 
-# *“It Works on My Machine” —  "What 5 CI/CD Failures Taught Us About Shipping Software"*
+# “It Works on My Machine”
+
+"What 5 CI/CD Failures Taught Us About Shipping Software"
 
 In modern development, CI/CD pipelines are the backbone of shipping fast, safe, and consistent software. We trust them to be reliable, reproducible, and immune to the quirks of individual developer environments.
 
@@ -529,11 +531,9 @@ An engineer added a new validation rule and updated the unit tests. Locally:
 composer test
 ```
 
-✅ All tests passed.
-
-CI ✅ All green.
-
-Deployment to staging ✅ No errors in the pipeline.
+✅ All tests passed.  
+✅ CI. All green.  
+✅ Deployment to staging. No errors in the pipeline.
 
 But QA flagged an issue:
 
@@ -565,9 +565,9 @@ But the deployed version was doing… nothing.
 
 We SSH’d into the ECS container.
 
-Checked the PHP version: ✅
-Checked the container’s environment: ✅
-Pulled up logs: ✅
+Checked the PHP version: ✅  
+Checked the container’s environment: ✅  
+Pulled up logs: ✅  
 No errors.
 
 So we added logging inside the validator service:
